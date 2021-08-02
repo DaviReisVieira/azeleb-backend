@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  dev:
+    container_name: azeleb_dev
+    image: azeleb-dev:1.0.0
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:dev
+    env_file:
+      - .env.stage.dev
+    ports:
+      - 3000:3000
+      - 9229:9229
+    networks:
+      - azeleb-network
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+  redis:
+    container_name: redis_azeleb
+    image: redis:5
+    networks:
+      - azeleb-network
+  postgres:
+    container_name: postgres_azeleb
+    image: postgres
+    networks:
+      - azeleb-network
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: azeleb
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  # prod:
+  #   container_name: azeleb_prod
+  #   image: azeleb-prod:1.0.0
+  #   build:
+  #     context: .
+  #     target: production
+  #     dockerfile: ./Dockerfile
+  #   command: npm run start:prod
+  #   ports:
+  #     - 3000:3000
+  #     - 9229:9229
+  #   networks:
+  #     - azeleb-network
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   restart: unless-stopped
+
+networks:
+  azeleb-network:
+volumes:
+  pgdata:
